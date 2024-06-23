@@ -106,7 +106,7 @@ namespace booksforall
             {
                 if (Program.dropoff.Count > 0)
                 {
-                    t_book = Program.dropoff.First.Value;
+                    t_book = Program.dropoff.First();
                     Program.dropoff.RemoveFirst();
                 }
                 else
@@ -152,7 +152,7 @@ namespace booksforall
                 {
                     if (Program.dropoff.Count > 0)
                     {
-                        t_book = Program.dropoff.First.Value;
+                        t_book = Program.dropoff.First();
                         Program.dropoff.RemoveFirst();
                     }
                     else
