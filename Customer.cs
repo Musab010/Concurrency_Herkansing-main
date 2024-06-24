@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Threading;
-
 namespace booksforall
 {
     public class Customer
@@ -22,7 +18,8 @@ namespace booksforall
 
         public void DoWork()
         {
-            Program.counterSemaphore.Wait();
+            // Klant wacht tot er een boek beschikbaar is op de balie
+            Program.balieSemaphore.Wait();
             try
             {
                 if (Program.counter.Count > 0)
@@ -33,25 +30,27 @@ namespace booksforall
             }
             finally
             {
-                Program.counterSemaphore.Release();
+                Program.balieSemaphore.Release();
             }
 
             if (_currentBook != null)
             {
                 Console.WriteLine($"Customer {_id} is about to read the book {_currentBook.BookId}");
 
+                // Klant leest het boek
                 Thread.Sleep(new Random().Next(100, 500));
 
+                // Klant brengt het boek terug naar de inleverplaats
                 Console.WriteLine($"Customer {_id} is dropping off the book {_currentBook.BookId}");
 
-                Program.dropoffSemaphore.Wait();
+                Program.inleverplaatsSemaphore.Wait();
                 try
                 {
                     Program.dropoff.AddFirst(_currentBook);
                 }
                 finally
                 {
-                    Program.dropoffSemaphore.Release();
+                    Program.inleverplaatsSemaphore.Release();
                 }
 
                 _currentBook = null;
@@ -61,3 +60,8 @@ namespace booksforall
         }
     }
 }
+
+/*
+Musab Sivrikaya (0988932)
+Ozeir Moradi (0954800)
+*/

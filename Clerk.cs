@@ -1,14 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Threading;
-
 namespace booksforall
 {
     public class Clerk
     {
         private static LinkedList<BookRecord> _records; // Do not alter this line
         private int _id;
-        private static readonly SemaphoreSlim recordsSemaphore = new(1, 1);
+        private static readonly SemaphoreSlim recordSlotSemaphore = new(1, 1);
 
         public Clerk(int clerkId)
         {
@@ -31,14 +27,14 @@ namespace booksforall
             }
         }
 
-        internal static int checkBookInInventory() //do not alter this method
-        // this method is called when the library is closing
-        // this method should return the number of books left in the library
+        internal static int checkBookInInventory() // Do not alter this method
+        // This method is called when the library is closing
+        // This method should return the number of books left in the library
         {
             int counter = 0;
             foreach (var record in _records)
             {
-                if (record.IsBorrowed == false) //we are counting the books that are int the library (not borrowed)
+                if (record.IsBorrowed == false) // We are counting the books that are in the library (not borrowed)
                 {
                     counter++;
                 }
@@ -53,7 +49,7 @@ namespace booksforall
 
         public void DoWork()
         {
-            // The clerk will put the book in the counter
+            // The clerk will put the book on the counter
             Console.WriteLine($"Clerk [{_id}] is going to check in the records for a book to put on the counter");
 
             Book? t_book = null;
@@ -79,23 +75,23 @@ namespace booksforall
 
             Console.WriteLine($"Clerk [{_id}] putting book [{t_book.BookId}] on the counter");
 
-            Program.counterSemaphore.Wait();
+            Program.balieSemaphore.Wait();
             try
             {
                 Program.counter.AddFirst(t_book);
             }
             finally
             {
-                Program.counterSemaphore.Release();
+                Program.balieSemaphore.Release();
             }
-            Program.bookAvailable.Release();
+            Program.boekBeschikbaar.Release();
 
             // The clerk will take a nap for overworking
             Thread.Sleep(new Random().Next(100, 500));
 
             // The clerk will wait for a book in the dropoff
-            Program.bookAvailable.Wait();
-            Program.dropoffSemaphore.Wait();
+            Program.boekBeschikbaar.Wait();
+            Program.inleverplaatsSemaphore.Wait();
 
             try
             {
@@ -112,7 +108,7 @@ namespace booksforall
 
             finally
             {
-                Program.dropoffSemaphore.Release();
+                Program.inleverplaatsSemaphore.Release();
             }
 
             if (t_book == null)
@@ -136,57 +132,51 @@ namespace booksforall
             }
         }
 
-        // Added method to process remaining books in dropoff
+        // Modified method to process only one remaining book from the dropoff
         public void ProcessRemainingBooks()
         {
             Book? t_book = null;
 
-            while (true)
+            Program.inleverplaatsSemaphore.Wait();
+            try
             {
-                Program.dropoffSemaphore.Wait();
-                try
+                if (Program.dropoff.Count > 0)
                 {
-                    if (Program.dropoff.Count > 0)
-                    {
-                        t_book = Program.dropoff.First();
-                        Program.dropoff.RemoveFirst();
-                    }
-                    else
-                    {
-                        break;
-                    }
+                    t_book = Program.dropoff.First();
+                    Program.dropoff.RemoveFirst();
                 }
-                finally
-                {
-                    Program.dropoffSemaphore.Release();
-                }
+            }
+            finally
+            {
+                Program.inleverplaatsSemaphore.Release();
+            }
 
-                if (t_book != null)
+            if (t_book != null)
+            {
+                bool isReturned = false;
+                lock (_records)
                 {
-                    bool isReturned = false;
-                    lock (_records)
+                    foreach (BookRecord record in _records)
                     {
-                        foreach (BookRecord record in _records)
+                        if (record.Book.BookId == t_book.BookId)
                         {
-                            if (record.Book.BookId == t_book.BookId)
-                            {
-                                record.IsBorrowed = false;
-                                isReturned = true;
-                                break;
-                            }
+                            record.IsBorrowed = false;
+                            isReturned = true;
+                            break;
                         }
                     }
-                    if (isReturned)
-                    {
-                        Console.WriteLine(
-                            $"Clerk [{_id}] is checking in the book [{t_book.BookId}] in the records"
-                        );
-                        Console.WriteLine(
-                            $"Clerk [{_id}] has marked book [{t_book.BookId}] as returned in the records."
-                        );
-                    }
+                }
+                if (isReturned)
+                {
+                    Console.WriteLine($"Clerk [{_id}] is checking in the book [{t_book.BookId}] in the records");
+                    Console.WriteLine($"Clerk [{_id}] has marked book [{t_book.BookId}] as returned in the records.");
                 }
             }
         }
     }
 }
+
+/*
+Musab Sivrikaya (0988932)
+Ozeir Moradi (0954800)
+*/

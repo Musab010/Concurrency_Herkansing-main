@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Threading;
 
 namespace booksforall
 {
     internal class Program
     {
-        public static int n_threads = 5; // Pas dit aan naar behoefte
+        public static int n_threads = 5; // Change this as needed
 
         private static readonly string studentname1 = "Musab Sivrikaya"; // name and surname of the student1
         private static readonly string studentnum1 = "0988932"; // student number
@@ -19,35 +17,38 @@ namespace booksforall
         public static readonly Customer[] customers = new Customer[n_threads];
         public static LinkedList<Book> counter = new();
         public static LinkedList<Book> dropoff = new();
-        public static SemaphoreSlim counterSemaphore = new(1, 1);
-        public static SemaphoreSlim dropoffSemaphore = new(1, 1);
-        public static SemaphoreSlim bookAvailable = new(0, int.MaxValue); 
+        public static SemaphoreSlim balieSemaphore = new(1, 1);
+        public static SemaphoreSlim inleverplaatsSemaphore = new(1, 1);
+        public static SemaphoreSlim boekBeschikbaar = new(0, int.MaxValue);
 
         static void Main(string[] args)
         {
             Console.WriteLine("Hello, we are starting our new pickup LIBRARY!");
             InitLibrary(); // Do not alter this method
 
-            // init the customers
+            // Initialize the customers
             InitCustomers(); // Do not alter this call
 
-            // init the clerks
+            // Initialize the clerks
             InitClerks(); // Do not alter this call
 
-            // init records
+            // Initialize records
             Clerk.initRecords(dropoff); // Do not alter this line
-            // clean the dropoff
+            // Clean the dropoff
             dropoff.Clear(); // Do not alter this line
 
-            // start the clerks
+            // Start the clerks
             StartClerks(); // Do not alter this call
 
-            // start the customers
+            // Start the customers
             StartCustomers(); // Do not alter this call
             // DO NOT CHANGE THE CODE ABOVE
             // Use the space below to add your code if needed
 
-            // Ensure clerks process all remaining books in dropoff before closing
+            // Ensure each clerk processes one remaining book from dropoff before closing
+            // Note: We add a slight delay here to ensure that all books are likely dropped off by customers.
+            Thread.Sleep(500);
+
             foreach (var clerk in clerks)
             {
                 clerk.ProcessRemainingBooks();
@@ -147,3 +148,8 @@ namespace booksforall
         }
     }
 }
+
+/*
+Musab Sivrikaya (0988932)
+Ozeir Moradi (0954800)
+*/
