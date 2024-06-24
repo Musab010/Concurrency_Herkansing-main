@@ -6,7 +6,7 @@ namespace booksforall
 {
     internal class Program
     {
-        public static int n_threads = 1000; // Pas dit aan naar behoefte
+        public static int n_threads = 5; // Pas dit aan naar behoefte
 
         private static readonly string studentname1 = "Musab Sivrikaya"; // name and surname of the student1
         private static readonly string studentnum1 = "0988932"; // student number
@@ -21,7 +21,7 @@ namespace booksforall
         public static LinkedList<Book> dropoff = new();
         public static SemaphoreSlim counterSemaphore = new(1, 1);
         public static SemaphoreSlim dropoffSemaphore = new(1, 1);
-        public static SemaphoreSlim bookAvailable = new(0, int.MaxValue); // To signal when a book is available
+        public static SemaphoreSlim bookAvailable = new(0, int.MaxValue); 
 
         static void Main(string[] args)
         {

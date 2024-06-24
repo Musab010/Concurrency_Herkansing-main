@@ -31,28 +31,22 @@ namespace booksforall
             }
         }
 
-        internal static int checkBookInInventory() // Do not alter this method
+        internal static int checkBookInInventory() //do not alter this method
+        // this method is called when the library is closing
+        // this method should return the number of books left in the library
         {
             int counter = 0;
-            recordsSemaphore.Wait();
-            try
+            foreach (var record in _records)
             {
-                foreach (var record in _records)
+                if (record.IsBorrowed == false) //we are counting the books that are int the library (not borrowed)
                 {
-                    if (record.IsBorrowed == false)
-                    {
-                        counter++;
-                    }
-                }
-
-                if (counter != _records.Count)
-                {
-                    Console.WriteLine("Error: the number of books left in the library does not match the number of records." + counter + " " + _records.Count);
+                    counter++;
                 }
             }
-            finally
+
+            if (counter != _records.Count)
             {
-                recordsSemaphore.Release();
+                Console.WriteLine("Error: the number of books left in the library does not match the number of records." + counter + _records.Count);
             }
             return counter;
         }
@@ -102,6 +96,7 @@ namespace booksforall
             // The clerk will wait for a book in the dropoff
             Program.bookAvailable.Wait();
             Program.dropoffSemaphore.Wait();
+
             try
             {
                 if (Program.dropoff.Count > 0)
@@ -114,6 +109,7 @@ namespace booksforall
                     t_book = null;
                 }
             }
+
             finally
             {
                 Program.dropoffSemaphore.Release();
@@ -157,7 +153,7 @@ namespace booksforall
                     }
                     else
                     {
-                        break; // No more books to process
+                        break;
                     }
                 }
                 finally
@@ -167,6 +163,7 @@ namespace booksforall
 
                 if (t_book != null)
                 {
+                    bool isReturned = false;
                     lock (_records)
                     {
                         foreach (BookRecord record in _records)
@@ -174,10 +171,19 @@ namespace booksforall
                             if (record.Book.BookId == t_book.BookId)
                             {
                                 record.IsBorrowed = false;
-                                Console.WriteLine($"Clerk [{_id}] is checking in the book [{t_book.BookId}] in the records");
+                                isReturned = true;
                                 break;
                             }
                         }
+                    }
+                    if (isReturned)
+                    {
+                        Console.WriteLine(
+                            $"Clerk [{_id}] is checking in the book [{t_book.BookId}] in the records"
+                        );
+                        Console.WriteLine(
+                            $"Clerk [{_id}] has marked book [{t_book.BookId}] as returned in the records."
+                        );
                     }
                 }
             }
