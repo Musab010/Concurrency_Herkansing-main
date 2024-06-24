@@ -6,7 +6,7 @@ namespace booksforall
 {
     internal class Program
     {
-        public static int n_threads = 50; // Pas dit aan naar behoefte
+        public static int n_threads = 1000; // Pas dit aan naar behoefte
 
         private static readonly string studentname1 = "Musab Sivrikaya"; // name and surname of the student1
         private static readonly string studentnum1 = "0988932"; // student number
